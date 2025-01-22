@@ -1,0 +1,172 @@
+<html>
+
+<head>
+  <title>ESP32-CAM Robot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 10px;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    .section {
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    th {
+      font-size: medium;
+      background-color: aquamarine;
+      padding: 8px;
+      margin-bottom: 15px;
+    }
+
+    td {
+      padding: 10px;
+    }
+
+    .button {
+      background-color: #2f4468;
+      border: none;
+      color: white;
+      padding: 14px 24px;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 4px;
+      user-select: none;
+      margin: 5px;
+    }
+
+    .button:hover {
+      background-color: #3b587a;
+    }
+
+    .slider-label {
+      font-size: small;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .slider {
+      width: 60%;
+      margin-top: 5px;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    table {
+      margin: auto;
+    }
+
+    .light-control {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>ESP32 Surveillance Car</h2>
+  <img src="" id="photo" alt="Live Video Stream">
+
+  <div class="container">
+    <!-- Pan Tilt Control -->
+    <div class="section">
+      <table>
+        <tr>
+          <th>Pan Tilt Control</th>
+        </tr>
+        <tr>
+          <td>
+            <button class="button" onmousedown="toggleCheckbox('up');" ontouchstart="toggleCheckbox('up');">Up</button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button class="button" onmousedown="toggleCheckbox('left');" ontouchstart="toggleCheckbox('left');"
+              style="margin-right: 20px;">Left</button>
+            <button class="button" onmousedown="toggleCheckbox('right');" ontouchstart="toggleCheckbox('right');"
+              style="margin-left: 20px;">Right</button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button class="button" onmousedown="toggleCheckbox('down');"
+              ontouchstart="toggleCheckbox('down');">Down</button>
+          </td>
+        </tr>
+      </table>
+      <!-- Light Control -->
+      <div class="light-control">
+        <table>
+          <tr>
+            <th>Light Control</th>
+          </tr>
+          <tr>
+            <td>
+              <label class="slider-label">Brightness</label>
+              <input type="range" id="lightBrightness" class="slider" name="lightBrightness" min="0" max="50" style="width: 100%;">
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Controlling Car -->
+    <div class="section">
+      <table>
+        <tr>
+          <th>Controlling Car</th>
+        </tr>
+        <tr>
+          <td>
+            <button class="button" onmousedown="toggleCheckbox('up');"
+              ontouchstart="toggleCheckbox('up');">Forward</button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label class="slider-label">Forward Speed</label>
+            <input type="range" id="forwardSpeed" class="slider" name="forwardSpeed" min="0" max="50">
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button class="button" onmousedown="toggleCheckbox('left');"
+              ontouchstart="toggleCheckbox('left');">Left</button>
+            <button class="button" onmousedown="toggleCheckbox('stop');" ontouchstart="toggleCheckbox('stop');"
+              style="margin:0px 20px;">Stop</button>
+            <button class="button" onmousedown="toggleCheckbox('right');"
+              ontouchstart="toggleCheckbox('right');">Right</button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button class="button" onmousedown="toggleCheckbox('down');"
+              ontouchstart="toggleCheckbox('down');">Backward</button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label class="slider-label">Backward Speed</label>
+            <input type="range" id="backwardSpeed" class="slider" name="backwardSpeed" min="0" max="50">
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</body>
+
+</html>
