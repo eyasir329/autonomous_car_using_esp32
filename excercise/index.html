@@ -1,172 +1,286 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ESP32-CAM Robot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 10px;
+      }
 
-<head>
-  <title>ESP32-CAM Robot</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 10px;
-    }
+      th {
+        font-size: medium;
+        background-color: aquamarine;
+        padding: 8px;
+        margin-bottom: 15px;
+      }
 
-    .container {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin-top: 20px;
-    }
+      td {
+        padding: 10px;
+      }
 
-    .section {
-      text-align: center;
-      margin: 10px 0;
-    }
+      .button:hover {
+        background-color: #3b587a;
+      }
 
-    th {
-      font-size: medium;
-      background-color: aquamarine;
-      padding: 8px;
-      margin-bottom: 15px;
-    }
+      .slider-label {
+        font-size: small;
+        margin-bottom: 5px;
+        display: block;
+      }
 
-    td {
-      padding: 10px;
-    }
+      .slider {
+        width: 60%;
+        margin-top: 5px;
+      }
 
-    .button {
-      background-color: #2f4468;
-      border: none;
-      color: white;
-      padding: 14px 24px;
-      font-size: 18px;
-      cursor: pointer;
-      border-radius: 4px;
-      user-select: none;
-      margin: 5px;
-    }
+      img {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+      }
 
-    .button:hover {
-      background-color: #3b587a;
-    }
+      .light-control {
+        margin-top: 30px;
+      }
 
-    .slider-label {
-      font-size: small;
-      margin-bottom: 5px;
-      display: block;
-    }
+      .button {
+        background-color: #2f4468;
+        border: none;
+        color: white;
+        padding: 14px 24px;
+        font-size: 18px;
+        cursor: pointer;
+        border-radius: 4px;
+        user-select: none;
+        margin: 5px;
+        display: inline-block;
+        text-align: center;
+      }
 
-    .slider {
-      width: 60%;
-      margin-top: 5px;
-    }
+      .container {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
 
-    img {
-      max-width: 100%;
-      height: auto;
-      margin-bottom: 20px;
-    }
+      .img-container {
+        flex: 1;
+        text-align: right;
+      }
 
-    table {
-      margin: auto;
-    }
+      .controls-container {
+        flex: 1;
+        text-align: left;
+      }
 
-    .light-control {
-      margin-top: 30px;
-    }
-  </style>
-</head>
+      .section {
+        text-align: center;
+        margin: 10px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
 
-<body>
-  <h2>ESP32 Surveillance Car</h2>
-  <img src="" id="photo" alt="Live Video Stream">
+      table {
+        margin: auto;
+        text-align: center;
+      }
+    </style>
+  </head>
 
-  <div class="container">
-    <!-- Pan Tilt Control -->
-    <div class="section">
-      <table>
-        <tr>
-          <th>Pan Tilt Control</th>
-        </tr>
-        <tr>
-          <td>
-            <button class="button" onmousedown="toggleCheckbox('up');" ontouchstart="toggleCheckbox('up');">Up</button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <button class="button" onmousedown="toggleCheckbox('left');" ontouchstart="toggleCheckbox('left');"
-              style="margin-right: 20px;">Left</button>
-            <button class="button" onmousedown="toggleCheckbox('right');" ontouchstart="toggleCheckbox('right');"
-              style="margin-left: 20px;">Right</button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <button class="button" onmousedown="toggleCheckbox('down');"
-              ontouchstart="toggleCheckbox('down');">Down</button>
-          </td>
-        </tr>
-      </table>
-      <!-- Light Control -->
-      <div class="light-control">
-        <table>
-          <tr>
-            <th>Light Control</th>
-          </tr>
-          <tr>
-            <td>
-              <label class="slider-label">Brightness</label>
-              <input type="range" id="lightBrightness" class="slider" name="lightBrightness" min="0" max="50" style="width: 100%;">
-            </td>
-          </tr>
-        </table>
+  <body>
+    <h2>ESP32 Surveillance Car</h2>
+
+    <div class="main">
+      <div class="container">
+        <!-- Image on the left -->
+        <div class="img-container">
+          <img src="" id="photo" alt="Live Video Stream" />
+          <!-- Light Control -->
+          <div class="light-control">
+            <table>
+              <tr>
+                <th>Light Control</th>
+              </tr>
+              <tr>
+                <td>
+                  <label class="slider-label">Brightness</label>
+                  <input
+                    type="range"
+                    id="lightBrightness"
+                    class="slider"
+                    name="lightBrightness"
+                    min="0"
+                    max="50"
+                    oninput="adjustBrightness(this.value)"
+                    style="width: 100%"
+                  />
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Controls on the right -->
+        <div class="controls-container">
+          <div class="section">
+            <table>
+              <tr>
+                <th>Pan Tilt Control</th>
+              </tr>
+              <tr>
+                <td>
+                  <button
+                    class="button"
+                    onmousedown="moveCamera('up');"
+                    ontouchstart="moveCamera('up');"
+                  >
+                    Up
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button
+                    class="button"
+                    onmousedown="moveCamera('left');"
+                    ontouchstart="moveCamera('left');"
+                  >
+                    Left
+                  </button>
+                  <button
+                    class="button"
+                    onmousedown="moveCamera('center');"
+                    ontouchstart="moveCamera('center');"
+                  >
+                    Center
+                  </button>
+                  <button
+                    class="button"
+                    onmousedown="moveCamera('right');"
+                    ontouchstart="moveCamera('right');"
+                  >
+                    Right
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button
+                    class="button"
+                    onmousedown="moveCamera('down');"
+                    ontouchstart="moveCamera('down');"
+                  >
+                    Down
+                  </button>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Car control section -->
+          <div class="section">
+            <table>
+              <tr>
+                <th>Car Control</th>
+              </tr>
+              <tr>
+                <td>
+                  <label class="slider-label">Forward Speed</label>
+                  <input
+                    type="range"
+                    id="forwardSpeed"
+                    class="slider"
+                    name="forwardSpeed"
+                    min="0"
+                    max="50"
+                    oninput="setSpeed('forward', this.value)"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button
+                    class="button"
+                    onmousedown="moveCar('left');"
+                    ontouchstart="moveCar('left');"
+                  >
+                    Left
+                  </button>
+                  <button
+                    class="button"
+                    onmousedown="moveCar('stop');"
+                    ontouchstart="moveCar('stop');"
+                  >
+                    Stop
+                  </button>
+                  <button
+                    class="button"
+                    onmousedown="moveCar('right');"
+                    ontouchstart="moveCar('right');"
+                  >
+                    Right
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label class="slider-label">Backward Speed</label>
+                  <input
+                    type="range"
+                    id="backwardSpeed"
+                    class="slider"
+                    name="backwardSpeed"
+                    min="0"
+                    max="50"
+                    oninput="setSpeed('backward', this.value)"
+                  />
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Controlling Car -->
-    <div class="section">
-      <table>
-        <tr>
-          <th>Controlling Car</th>
-        </tr>
-        <tr>
-          <td>
-            <button class="button" onmousedown="toggleCheckbox('up');"
-              ontouchstart="toggleCheckbox('up');">Forward</button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <label class="slider-label">Forward Speed</label>
-            <input type="range" id="forwardSpeed" class="slider" name="forwardSpeed" min="0" max="50">
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <button class="button" onmousedown="toggleCheckbox('left');"
-              ontouchstart="toggleCheckbox('left');">Left</button>
-            <button class="button" onmousedown="toggleCheckbox('stop');" ontouchstart="toggleCheckbox('stop');"
-              style="margin:0px 20px;">Stop</button>
-            <button class="button" onmousedown="toggleCheckbox('right');"
-              ontouchstart="toggleCheckbox('right');">Right</button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <button class="button" onmousedown="toggleCheckbox('down');"
-              ontouchstart="toggleCheckbox('down');">Backward</button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <label class="slider-label">Backward Speed</label>
-            <input type="range" id="backwardSpeed" class="slider" name="backwardSpeed" min="0" max="50">
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
-</body>
+    <script>
+      // Function to handle actions with GET requests
+      function toggleCheckbox(action) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/action?go=" + action, true);
+        xhr.send();
+      }
 
+      // Function to handle car movements (forward, backward, left, right, stop)
+      function moveCar(direction) {
+        toggleCheckbox(`moveCar_${direction}`);
+      }
+
+      // Function to handle camera pan and tilt (up, down, left, right)
+      function moveCamera(direction) {
+        toggleCheckbox(`moveCamera_${direction}`);
+      }
+
+      // Function to adjust light brightness
+      function adjustBrightness(brightness) {
+        toggleCheckbox(`adjustBrightness_${brightness}`);
+      }
+
+      // Function to set speed for the car's movement
+      function setSpeed(direction, speed) {
+        toggleCheckbox(`setSpeed_${direction}_${speed}`);
+      }
+
+      // Set up the live stream URL on page load
+      window.onload = function () {
+        document.getElementById("photo").src =
+          window.location.href.slice(0, -1) + ":81/stream";
+      };
+    </script>
+  </body>
 </html>
