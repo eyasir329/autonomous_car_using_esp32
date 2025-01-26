@@ -37,21 +37,23 @@ const char *password = "newtown123";
 #error "Camera model not selected"
 #endif
 
-#define MOTOR_FORWARD_PIN 12  // Motor direction pin for forward
-#define MOTOR_BACKWARD_PIN 2  // Motor direction pin for backward
-#define MOTOR_SPEED_PIN 4     // PWM speed control pin
+// Pin Definitions
+#define MOTOR_FORWARD_PIN 15
+#define MOTOR_BACKWARD_PIN 12
+#define MOTOR_SPEED_PIN 4
 
 #define PAN_SERVO 13
-#define TILT_SERVO 15
+#define TILT_SERVO 2
 #define STEERING_SERVO 14
 
 // #define LED_PIN 4
-
 Servo panServo, tiltServo, steeringServo;
+Servo dummyServo1;
+Servo dummyServo2;
+Servo dummyServo3;
 
-int panPos = 90;
-int tiltPos = 90;
-int steeringPos = 90;
+int panPos = 70, tiltPos = 70, steeringPos = 90, dammyPos = 90;
+int forwardSpeed = 30, backwardSpeed = 30;
 
 static const char *_STREAM_CONTENT_TYPE =
     "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
@@ -81,11 +83,10 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
         font-size: medium;
         background-color: aquamarine;
         padding: 8px;
-        margin-bottom: 15px;
       }
 
       td {
-        padding: 10px;
+        padding: 5px;
       }
 
       .button:hover {
@@ -106,11 +107,6 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
       img {
         max-width: 100%;
         height: auto;
-        margin-bottom: 20px;
-      }
-
-      .light-control {
-        margin-top: 30px;
       }
 
       .button {
@@ -122,7 +118,7 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
         cursor: pointer;
         border-radius: 4px;
         user-select: none;
-        margin: 5px;
+        margin: 2px 5px;
         display: inline-block;
         text-align: center;
       }
@@ -130,7 +126,6 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
       .container {
         display: flex;
         justify-content: space-between;
-        margin-top: 20px;
       }
 
       .img-container {
@@ -145,7 +140,6 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
 
       .section {
         text-align: center;
-        margin: 10px 0;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -169,8 +163,75 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
         </div>
 
         <!-- Controls on the right -->
-        <div class="controls-container">
+        <div class="controls-container" style="margin-top: 20px">
           <div class="section">
+            <table>
+              <tr>
+                <th>Car Control</th>
+              </tr>
+              <tr>
+                <td>
+                  <button
+                    class="button"
+                    onmousedown="speedCar('forward');"
+                    ontouchstart="speedCar('forward');"
+                  >
+                    Forward
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button
+                    class="button"
+                    onmousedown="moveCar('left');"
+                    ontouchstart="moveCar('left');"
+                  >
+                    Left
+                  </button>
+                  <button
+                    class="button"
+                    onmousedown="moveCar('center');"
+                    ontouchstart="moveCar('center');"
+                  >
+                    Center
+                  </button>
+                  <button
+                    class="button"
+                    onmousedown="moveCar('right');"
+                    ontouchstart="moveCar('right');"
+                  >
+                    Right
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button
+                    class="button"
+                    onmousedown="speedCar('backward');"
+                    ontouchstart="speedCar('backward');"
+                  >
+                    Backward
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <button
+                    class="button"
+                    onmousedown="speedCar('stop');"
+                    ontouchstart="speedCar('stop');"
+                  >
+                    Stop
+                  </button>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Car control section -->
+          <div class="section" style="margin-top: 10px">
             <table>
               <tr>
                 <th>Pan Tilt Control</th>
@@ -224,76 +285,6 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
               </tr>
             </table>
           </div>
-
-          <!-- Car control section -->
-          <div class="section">
-            <table>
-              <tr>
-                <th>Car Control</th>
-              </tr>
-              <tr>
-                <td>
-                  <label class="slider-label">Forward Speed</label>
-                  <input
-                    type="range"
-                    id="forwardSpeed"
-                    class="slider"
-                    name="forwardSpeed"
-                    min="50"
-                    max="255"
-                    oninput="setSpeed('forward', this.value)"
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <button
-                    class="button"
-                    onmousedown="moveCar('left');"
-                    ontouchstart="moveCar('left');"
-                  >
-                    Left
-                  </button>
-                 <button
-                    class="button"
-                    onmousedown="moveCar('center');"
-                    ontouchstart="moveCar('center');"
-                  >
-                    Center
-                  </button>
-                 
-                  <button
-                    class="button"
-                    onmousedown="moveCar('right');"
-                    ontouchstart="moveCar('right');"
-                  >
-                    Right
-                  </button>
-                   <button
-                    class="button"
-                    onmousedown="moveCar('stop');"
-                    ontouchstart="moveCar('stop');"
-                  >
-                    Stop
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <label class="slider-label">Backward Speed</label>
-                  <input
-                    type="range"
-                    id="backwardSpeed"
-                    class="slider"
-                    name="backwardSpeed"
-                    min="50"
-                    max="255"
-                    oninput="setSpeed('backward', this.value)"
-                  />
-                </td>
-              </tr>
-            </table>
-          </div>
         </div>
       </div>
     </div>
@@ -306,7 +297,7 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
         xhr.send();
       }
 
-      // Function to handle car movements (forward, backward, left, right, stop)
+      // Function to handle car movements ( left, right)
       function moveCar(direction) {
         toggleCheckbox(`moveCar_${direction}`);
       }
@@ -316,14 +307,9 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
         toggleCheckbox(`moveCamera_${direction}`);
       }
 
-      // Function to adjust light brightness
-      function adjustBrightness(brightness) {
-        toggleCheckbox(`adjustBrightness_${brightness}`);
-      }
-
       // Function to set speed for the car's movement
-      function setSpeed(direction, speed) {
-        toggleCheckbox(`setSpeed_${direction}_${speed}`);
+      function speedCar(direction) {
+        toggleCheckbox(`speed_${direction}`);
       }
 
       // Set up the live stream URL on page load
@@ -334,17 +320,21 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
     </script>
   </body>
 </html>
-
 )rawliteral";
 
+static esp_err_t index_handler(httpd_req_t *req);
+static esp_err_t stream_handler(httpd_req_t *req);
+static esp_err_t cmd_handler(httpd_req_t *req);
+
+// Function Prototypes
+void startCameraServer();
+void moveMotorForward(int speed);
+void moveMotorBackward(int speed);
+void stopMotor();
 void initServos();
 void initMotorPins();
 void initWiFi();
 void initCamera();
-static esp_err_t index_handler(httpd_req_t *req);
-static esp_err_t stream_handler(httpd_req_t *req);
-static esp_err_t cmd_handler(httpd_req_t *req);
-void startCameraServer();
 
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);  // disable brownout detector
@@ -359,6 +349,11 @@ void setup() {
 void loop() {}
 
 void initServos() {
+  // Initialize dummy servos to avoid PWM conflicts
+  dummyServo1.attach(MOTOR_FORWARD_PIN);  // Pin 12 or 13
+  dummyServo2.attach(MOTOR_BACKWARD_PIN);
+  dummyServo3.attach(MOTOR_SPEED_PIN);
+
   panServo.setPeriodHertz(50);
   tiltServo.setPeriodHertz(50);
   steeringServo.setPeriodHertz(50);
@@ -373,9 +368,12 @@ void initServos() {
 }
 
 void initMotorPins() {
-  pinMode(MOTOR_FORWARD_PIN, OUTPUT);   // Set forward pin as output
-  pinMode(MOTOR_BACKWARD_PIN, OUTPUT);  // Set backward pin as output
-  pinMode(MOTOR_SPEED_PIN, OUTPUT);     // Set speed pin as output
+  pinMode(MOTOR_FORWARD_PIN, OUTPUT);
+  pinMode(MOTOR_BACKWARD_PIN, OUTPUT);
+  pinMode(MOTOR_SPEED_PIN, OUTPUT);
+
+  // Ensure motor is stopped initially
+  stopMotor();
 
   // pinMode(LED_PIN, OUTPUT);
   // digitalWrite(LED_PIN, LOW);
@@ -499,33 +497,28 @@ static esp_err_t stream_handler(httpd_req_t *req) {
   return res;
 }
 
+// HTTP Handler Function
 static esp_err_t cmd_handler(httpd_req_t *req) {
   char *buf;
   size_t buf_len;
   char variable[32] = {0};
-  int speed = 0;  // Variable to store speed value
-
   buf_len = httpd_req_get_url_query_len(req) + 1;
+
   if (buf_len > 1) {
     buf = (char *)malloc(buf_len);
     if (!buf) {
       httpd_resp_send_500(req);
       return ESP_FAIL;
     }
-    if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
-      if (httpd_query_key_value(buf, "go", variable, sizeof(variable)) ==
-          ESP_OK) {
-        // Successfully extracted the "go" action
-      } else {
-        free(buf);
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
-                            "Invalid query parameter");
-        return ESP_FAIL;
-      }
+
+    if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK &&
+        httpd_query_key_value(buf, "go", variable, sizeof(variable)) ==
+            ESP_OK) {
+      Serial.printf("Command received: %s\n", variable);
     } else {
       free(buf);
       httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
-                          "Failed to read query string");
+                          "Invalid query parameter");
       return ESP_FAIL;
     }
     free(buf);
@@ -534,128 +527,82 @@ static esp_err_t cmd_handler(httpd_req_t *req) {
     return ESP_FAIL;
   }
 
-  // main logic here
-  Serial.println(variable);
-  // Check for motor control commands with speed
-  if (strstr(variable, "setSpeed_forward") != NULL) {
-    // Extract speed value from the command (e.g., setSpeed_forward_56 -> 56)
-    if (sscanf(variable, "setSpeed_forward_%d", &speed) == 1) {
-      moveCarForwardWithSpeed(
-          speed);  // Function to move car forward with the specified speed
-    } else {
-      Serial.println("Invalid forward speed command");
-      httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
-                          "Invalid speed for forward movement");
-      return ESP_FAIL;
-    }
-  } else if (strstr(variable, "setSpeed_backward") != NULL) {
-    // Extract speed value from the command (e.g., setSpeed_backward_56 -> 56)
-    if (sscanf(variable, "setSpeed_backward_%d", &speed) == 1) {
-      moveCarBackwardWithSpeed(
-          speed);  // Function to move car backward with the specified speed
-    } else {
-      Serial.println("Invalid backward speed command");
-      httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
-                          "Invalid speed for backward movement");
-      return ESP_FAIL;
-    }
-  } else if (strstr(variable, "adjustBrightness") != NULL) {
-    // Extract speed value from the command (e.g., setSpeed_backward_56 -> 56)
-    if (sscanf(variable, "adjustBrightness_%d", &speed) == 1) {
-      // analogWrite(LED_PIN, speed);
-      Serial.printf("LED Opacity: %d\n", speed);
-    } else {
-      Serial.println("Invalid opacity command");
-      httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
-                          "Invalid opacity movement");
-      return ESP_FAIL;
-    }
+  // Command Processing
+  if (strstr(variable, "speed_forward")) {
+    forwardSpeed = constrain(forwardSpeed + 10, 0, 255);
+    backwardSpeed = 0;
+    moveMotorForward(forwardSpeed);
+  } else if (strstr(variable, "speed_backward")) {
+    backwardSpeed = constrain(backwardSpeed + 10, 0, 255);
+    forwardSpeed = 0;
+    moveMotorBackward(backwardSpeed);
+  } else if (strstr(variable, "speed_stop")) {
+    stopMotor();
+  } else if (!strcmp(variable, "moveCamera_down")) {
+    tiltPos = constrain(tiltPos + 10, 0, 170);
+    tiltServo.write(tiltPos);
+    Serial.printf("Camera Tilt Down: %d\n", tiltPos);
+  } else if (!strcmp(variable, "moveCamera_up")) {
+    tiltPos = constrain(tiltPos - 10, 0, 170);
+    tiltServo.write(tiltPos);
+    Serial.printf("Camera Tilt Up: %d\n", tiltPos);
+  } else if (!strcmp(variable, "moveCamera_left")) {
+    panPos = constrain(panPos + 10, 0, 170);
+    panServo.write(panPos);
+    Serial.printf("Camera Pan Left: %d\n", panPos);
+  } else if (!strcmp(variable, "moveCamera_right")) {
+    panPos = constrain(panPos - 10, 0, 170);
+    panServo.write(panPos);
+    Serial.printf("Camera Pan Right: %d\n", panPos);
+  } else if (!strcmp(variable, "moveCamera_center")) {
+    panPos = tiltPos = 90;
+    panServo.write(panPos);
+    tiltServo.write(tiltPos);
+    Serial.println("Camera Centered");
+  } else if (!strcmp(variable, "moveCar_left")) {
+    steeringPos = constrain(steeringPos + 10, 30, 150);
+    steeringServo.write(steeringPos);
+    Serial.printf("Car Steering Left: %d\n", steeringPos);
+  } else if (!strcmp(variable, "moveCar_right")) {
+    steeringPos = constrain(steeringPos - 10, 30, 150);
+    steeringServo.write(steeringPos);
+    Serial.printf("Car Steering Right: %d\n", steeringPos);
+  } else if (!strcmp(variable, "moveCar_center")) {
+    steeringPos = 90;
+    steeringServo.write(90);
+    Serial.println("Car Centered");
   } else {
-    // Handle other camera or car movement commands
-    if (!strcmp(variable, "moveCamera_down")) {
-      if (tiltPos <= 170) {
-        tiltPos += 10;
-        tiltServo.write(tiltPos);
-      }
-      Serial.println(tiltPos);
-      Serial.println("Up");
-    } else if (!strcmp(variable, "moveCamera_left")) {
-      if (panPos <= 170) {
-        panPos += 10;
-        panServo.write(panPos);
-      }
-      Serial.println(panPos);
-      Serial.println("Left");
-    } else if (!strcmp(variable, "moveCamera_right")) {
-      if (panPos >= 10) {
-        panPos -= 10;
-        panServo.write(panPos);
-      }
-      Serial.println(panPos);
-      Serial.println("Right");
-    } else if (!strcmp(variable, "moveCamera_up")) {
-      if (tiltPos >= 10) {
-        tiltPos -= 10;
-        tiltServo.write(tiltPos);
-      }
-      Serial.println(tiltPos);
-      Serial.println("Down");
-    } else if (!strcmp(variable, "moveCamera_center")) {
-      panServo.write(90);
-      tiltServo.write(90);
-      panPos = 90;
-      tiltPos = 90;
-      Serial.println(90);
-      Serial.println("Center");
-    } else if (!strcmp(variable, "moveCar_left")) {
-      if (steeringPos <= 150) {
-        steeringPos += 10;
-        steeringServo.write(steeringPos);
-      }
-      Serial.println(steeringPos);
-      Serial.println("Left");
-    } else if (!strcmp(variable, "moveCar_right")) {
-      if (steeringPos >= 30) {
-        steeringPos -= 10;
-        steeringServo.write(steeringPos);
-      }
-      Serial.println(steeringPos);
-      Serial.println("Right");
-    } else if (!strcmp(variable, "moveCar_center")) {
-      steeringServo.write(90);
-      steeringPos = 90;
-      Serial.println(90);
-      Serial.println("center");
-    } else if (!strcmp(variable, "moveCar_stop")) {
-      digitalWrite(MOTOR_FORWARD_PIN, LOW);
-      digitalWrite(MOTOR_BACKWARD_PIN, LOW);
-      analogWrite(MOTOR_SPEED_PIN, 0);
-      Serial.println("Stop");
-    } else {
-      // Unknown command, return error
-      httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Unknown command");
-      return ESP_FAIL;
-    }
+    httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Unknown command");
+    return ESP_FAIL;
   }
-  // Send success response if everything is fine
+
+  // Success Response
   httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
   return httpd_resp_send(req, NULL, 0);  // Respond with no content (OK)
 }
 
-void moveCarForwardWithSpeed(int speed) {
-  // Insert motor control logic for moving the car forward with specified speed
+// Move Motor Forward
+void moveMotorForward(int speed) {
   digitalWrite(MOTOR_FORWARD_PIN, HIGH);
   digitalWrite(MOTOR_BACKWARD_PIN, LOW);
-  analogWrite(MOTOR_SPEED_PIN, speed);
-  Serial.printf("Moving forward with speed: %d\n", speed);
+  analogWrite(MOTOR_SPEED_PIN, speed);  // Set PWM speed (0-255)
+  Serial.printf("Motor Moving Forward at Speed: %d\n", speed);
 }
 
-void moveCarBackwardWithSpeed(int speed) {
-  // Insert motor control logic for moving the car backward with specified speed
+// Move Motor Backward
+void moveMotorBackward(int speed) {
   digitalWrite(MOTOR_FORWARD_PIN, LOW);
   digitalWrite(MOTOR_BACKWARD_PIN, HIGH);
-  analogWrite(MOTOR_SPEED_PIN, speed);
-  Serial.printf("Moving backward with speed: %d\n", speed);
+  analogWrite(MOTOR_SPEED_PIN, speed);  // Set PWM speed (0-255)
+  Serial.printf("Motor Moving Backward at Speed: %d\n", speed);
+}
+
+// Stop Motor
+void stopMotor() {
+  digitalWrite(MOTOR_FORWARD_PIN, LOW);
+  digitalWrite(MOTOR_BACKWARD_PIN, LOW);
+  analogWrite(MOTOR_SPEED_PIN, 0);  // Set speed to 0
+  Serial.println("Motor Stopped");
 }
 
 void startCameraServer() {
