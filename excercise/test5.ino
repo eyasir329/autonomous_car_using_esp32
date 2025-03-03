@@ -1,4 +1,5 @@
 #include <ESP32Servo.h>
+#include <HTTPClient.h>
 #include <WiFi.h>
 
 #include "Arduino.h"
@@ -12,6 +13,7 @@
 
 const char *ssid = "SUB1";
 const char *password = "newtown123";
+const char *serverUrl = "http://192.168.1.167:5000/receiveMessage";
 
 #define PART_BOUNDARY "123456789000000000000987654321"
 #define CAMERA_MODEL_AI_THINKER
@@ -336,6 +338,56 @@ void initMotorPins();
 void initWiFi();
 void initCamera();
 
+// serd message to web server
+//  Helper function to send message to the web server
+void sendMessageToServer(const char *message) {
+  HTTPClient http;
+
+  // Construct full URL with URL-encoded message
+  String url = String(serverUrl) + "?msg=" + urlencode(message);
+  Serial.print("Sending message to server: ");
+  Serial.println(url);
+
+  // Start the HTTP GET request
+  http.begin(url);
+
+  // Send the GET request
+  int httpCode = http.GET();
+
+  // Check the response
+  if (httpCode > 0) {
+    Serial.printf("Server Response Code: %d\n", httpCode);
+    if (httpCode == HTTP_CODE_OK) {
+      String response = http.getString();
+      Serial.println("Server Response: " + response);
+    }
+  } else {
+    Serial.printf("Error sending message: %s\n",
+                  http.errorToString(httpCode).c_str());
+  }
+
+  // End the request
+  http.end();
+}
+
+// URL encoding function
+String urlencode(const char *str) {
+  String encoded = "";
+  char c;
+  while ((c = *str++)) {
+    if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+      // Safe characters (no encoding needed)
+      encoded += c;
+    } else {
+      // Encode special characters
+      char buf[5];
+      sprintf(buf, "%%%02X", c);
+      encoded += buf;
+    }
+  }
+  return encoded;
+}
+
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);  // disable brownout detector
   Serial.begin(115200);
@@ -515,6 +567,7 @@ static esp_err_t cmd_handler(httpd_req_t *req) {
         httpd_query_key_value(buf, "go", variable, sizeof(variable)) ==
             ESP_OK) {
       Serial.printf("Command received: %s\n", variable);
+      sendMessageToServer("CommandReceived");  // Send to server
     } else {
       free(buf);
       httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
@@ -528,48 +581,75 @@ static esp_err_t cmd_handler(httpd_req_t *req) {
   }
 
   // Command Processing
+  String message = "";  // Variable to hold the formatted message
+
   if (strstr(variable, "speed_forward")) {
-    forwardSpeed = constrain(forwardSpeed + 10, 0, 255);
+    forwardSpeed = constrain(forwardSpeed + 10, 80, 300);
     backwardSpeed = 0;
     moveMotorForward(forwardSpeed);
+    message = "MotorForward" + String(forwardSpeed);  // Format the string
+    sendMessageToServer(message.c_str());  // Send the formatted string
+    Serial.printf("Motor Forward Speed: %d\n", forwardSpeed);
   } else if (strstr(variable, "speed_backward")) {
-    backwardSpeed = constrain(backwardSpeed + 10, 0, 255);
+    backwardSpeed = constrain(backwardSpeed + 10, 80, 300);
     forwardSpeed = 0;
     moveMotorBackward(backwardSpeed);
+    message = "MotorBackward" + String(backwardSpeed);  // Format the string
+    sendMessageToServer(message.c_str());  // Send the formatted string
+    Serial.printf("Motor Backward Speed: %d\n", backwardSpeed);
   } else if (strstr(variable, "speed_stop")) {
     stopMotor();
+    message = "MotorStopped";              // Format the string
+    sendMessageToServer(message.c_str());  // Send the formatted string
+    Serial.println("Motor Stopped");
   } else if (!strcmp(variable, "moveCamera_down")) {
     tiltPos = constrain(tiltPos + 10, 0, 170);
     tiltServo.write(tiltPos);
+    message = "CameraTiltDown" + String(tiltPos);  // Format the string
+    sendMessageToServer(message.c_str());          // Send the formatted string
     Serial.printf("Camera Tilt Down: %d\n", tiltPos);
   } else if (!strcmp(variable, "moveCamera_up")) {
     tiltPos = constrain(tiltPos - 10, 0, 170);
     tiltServo.write(tiltPos);
+    message = "CameraTiltUp" + String(tiltPos);  // Format the string
+    sendMessageToServer(message.c_str());        // Send the formatted string
     Serial.printf("Camera Tilt Up: %d\n", tiltPos);
   } else if (!strcmp(variable, "moveCamera_left")) {
     panPos = constrain(panPos + 10, 0, 170);
     panServo.write(panPos);
+    message = "CameraPanLeft" + String(panPos);  // Format the string
+    sendMessageToServer(message.c_str());        // Send the formatted string
     Serial.printf("Camera Pan Left: %d\n", panPos);
   } else if (!strcmp(variable, "moveCamera_right")) {
     panPos = constrain(panPos - 10, 0, 170);
     panServo.write(panPos);
+    message = "CameraPanRight" + String(panPos);  // Format the string
+    sendMessageToServer(message.c_str());         // Send the formatted string
     Serial.printf("Camera Pan Right: %d\n", panPos);
   } else if (!strcmp(variable, "moveCamera_center")) {
     panPos = tiltPos = 90;
     panServo.write(panPos);
     tiltServo.write(tiltPos);
+    message = "CameraCentered";            // Format the string
+    sendMessageToServer(message.c_str());  // Send the formatted string
     Serial.println("Camera Centered");
   } else if (!strcmp(variable, "moveCar_left")) {
     steeringPos = constrain(steeringPos + 10, 30, 150);
     steeringServo.write(steeringPos);
+    message = "CarSteeringLeft" + String(steeringPos);  // Format the string
+    sendMessageToServer(message.c_str());  // Send the formatted string
     Serial.printf("Car Steering Left: %d\n", steeringPos);
   } else if (!strcmp(variable, "moveCar_right")) {
     steeringPos = constrain(steeringPos - 10, 30, 150);
     steeringServo.write(steeringPos);
+    message = "CarSteeringRight" + String(steeringPos);  // Format the string
+    sendMessageToServer(message.c_str());  // Send the formatted string
     Serial.printf("Car Steering Right: %d\n", steeringPos);
   } else if (!strcmp(variable, "moveCar_center")) {
     steeringPos = 90;
     steeringServo.write(90);
+    message = "CarCentered";               // Format the string
+    sendMessageToServer(message.c_str());  // Send the formatted string
     Serial.println("Car Centered");
   } else {
     httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Unknown command");
